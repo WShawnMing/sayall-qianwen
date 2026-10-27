@@ -4,6 +4,53 @@ import Testing
 
 @Suite("Onboarding 输入工具与控制来源配对")
 struct OnboardingVoicePairingPlanTests {
+    @Test func qianwenUsesRightCommandHoldWithoutFnConversion() throws {
+        let plan = try #require(OnboardingVoicePairingPlan.resolve(
+            tool: .qianwen,
+            controlSource: .xiaomiRemote,
+            forceFunctionKey: OnboardingVoiceTool.qianwen.usesFunctionKeyDuringOnboarding
+        ))
+        #expect(plan.binding.shortcut == .rightCommand)
+        #expect(plan.binding.gestureMode == .hold)
+        #expect(plan.binding.validationState == .staged)
+        #expect(!plan.fnTapModeEnabled)
+        #expect(OnboardingVoiceTool.qianwen.preferredInputSourceID == nil)
+        #expect(OnboardingVoiceTool.qianwen.applicationBundleIdentifier == "com.alibaba.tongyi")
+        #expect(OnboardingVoiceToolRuntimePolicy.requiresRunningApplication(for: .qianwen))
+        #expect(!OnboardingVoiceToolVisibilityPolicy.visibleTools(availability: [:]).contains(.qianwen))
+        #expect(OnboardingVoiceToolVisibilityPolicy.visibleTools(
+            availability: [.qianwen: .available]
+        ).contains(.qianwen))
+    }
+
+    @Test func qianwenSelectionAndAbortedTrialPreserveExistingSettings() throws {
+        let suiteName = "RemoteMicTests.Qianwen.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let settings = AppSettings(defaults: defaults)
+        settings.voiceKeyMode = .function
+        settings.voiceFnTapModeEnabled = true
+        settings.setOnboardingVoiceTool(.qianwen)
+        settings.setOnboardingControlSource(.xiaomiRemote)
+        #expect(settings.voiceKeyMode == .function)
+        #expect(settings.voiceFnTapModeEnabled)
+        let plan = try #require(OnboardingVoicePairingPlan.resolve(
+            tool: .qianwen, controlSource: .xiaomiRemote
+        ))
+        settings.beginOnboardingVoiceTrial(plan)
+        #expect(settings.voiceKeyMode == .rightCommand)
+        #expect(!settings.voiceFnTapModeEnabled)
+        settings.discardOnboardingVoiceTrial()
+        #expect(settings.voiceKeyMode == .function)
+        #expect(settings.voiceFnTapModeEnabled)
+        settings.beginOnboardingVoiceTrial(plan)
+        settings.verifyOnboardingVoiceBinding(at: Date(timeIntervalSince1970: 1))
+        let resumed = AppSettings(defaults: defaults)
+        #expect(resumed.voiceKeyMode == .rightCommand)
+        #expect(resumed.verifiedVoiceToolBinding?.tool == .qianwen)
+        #expect(resumed.verifiedVoiceToolBinding?.validationState == .verified)
+    }
+
     @Test func selectedRemotePhotoFollowsTheControlSource() {
         #expect(
             OnboardingRemotePhotoKind.resolve(

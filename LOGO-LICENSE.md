@@ -1,5 +1,7 @@
 # 无线麦 App Logo 许可
 
+本地千问分支说明：本分支的 AppIcon、AppIcons/standard 与 AppIcons/faceted-duck 文件已替换为原创几何麦克风图形，以 GPL-3.0-only 提供。下列原许可保留用于说明上游品牌资产，不把新图形声明为上游官方 Logo。
+
 [English](LOGO-LICENSE.en.md)
 
 Copyright (C) 2026 HD838A. All rights reserved.

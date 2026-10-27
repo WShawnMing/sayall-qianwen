@@ -150,7 +150,7 @@ enum AgentConfigurationCommand {
             controlSource: controlSource,
             preferredGesture: nil,
             userBinding: nil,
-            forceFunctionKey: true
+            forceFunctionKey: voiceTool.usesFunctionKeyDuringOnboarding
         ) else {
             return result(
                 .failed,
@@ -273,7 +273,7 @@ enum AgentConfigurationCommand {
 
     private static func availableVoiceTools() -> [OnboardingVoiceTool] {
         [
-            .doubao, .weixin, .vokie, .typeless,
+            .doubao, .weixin, .vokie, .typeless, .qianwen,
         ].filter { OnboardingInputSourceSwitcher.availability(for: $0) == .available }
     }
 
@@ -282,7 +282,7 @@ enum AgentConfigurationCommand {
         switch tool {
         case .other:
             return true
-        case .doubao, .weixin, .vokie, .typeless:
+        case .doubao, .weixin, .vokie, .typeless, .qianwen:
             return OnboardingInputSourceSwitcher.availability(for: tool) == .available
         case .unselected:
             return false

@@ -1,5 +1,7 @@
 # SayAll App Logo License
 
+Local Qianwen fork: AppIcon, AppIcons/standard and AppIcons/faceted-duck have been replaced by original geometric microphone artwork provided under GPL-3.0-only. The upstream terms below are retained for provenance; the replacement artwork is not the official upstream logo.
+
 [简体中文](LOGO-LICENSE.md)
 
 Copyright (C) 2026 HD838A. All rights reserved.

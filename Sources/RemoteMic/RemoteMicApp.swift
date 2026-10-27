@@ -908,6 +908,7 @@ private final class RemoteMicAppDelegate: NSObject, NSApplicationDelegate, NSMen
     }
 
     private func startUpdaterIfNeeded() {
+        guard Bundle.main.object(forInfoDictionaryKey: "SayAllLocalFork") as? Bool != true else { return }
         guard !updaterStarted else { return }
         updaterController.updater.automaticallyChecksForUpdates =
             UpdateCheckPolicy(
@@ -1166,6 +1167,11 @@ private final class RemoteMicAppDelegate: NSObject, NSApplicationDelegate, NSMen
     }
 
     private func performUpdateCheck(_ purpose: UpdateCheckPurpose) {
+        // Keep the personal fork from being replaced by the upstream app.
+        guard Bundle.main.object(forInfoDictionaryKey: "SayAllLocalFork") as? Bool != true else {
+            updateInformation.setUnavailable()
+            return
+        }
         updateCheckTask?.cancel()
         updateCheckTask = Task { [weak self] in
             guard let self else { return }

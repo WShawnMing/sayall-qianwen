@@ -1,5 +1,12 @@
 # Onboarding macOS 平台适配规范
 
+## 本地千问分支适配
+
+千问使用公开 Bundle ID `com.alibaba.tongyi` 检测与后台启动，不操作输入源。
+已安装时显示其卡片；右 Command 按住为 staged 配对计划，Fn 点按保持关闭。
+千问的四项指引替代下文固定 Fn 和系统 Fn 占用指引，其他工具保持原行为。
+配置卡必须显示右 Command 与当前虚拟音频设备；实际收音和文字验证通过后才能完成。
+
 本文把 [`PRODUCT_SPEC.md`](PRODUCT_SPEC.md) 的跨平台产品能力映射到当前 macOS 实现。跨平台产品不变量以产品规范为准；本文只规定 macOS 的具体适配和验收边界。
 
 ## 当前平台映射

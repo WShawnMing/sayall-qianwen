@@ -202,6 +202,7 @@ enum OnboardingScreenshotRenderer {
                     .doubao: allVoiceToolsUnavailable ? .notInstalled : .available,
                     .weixin: allVoiceToolsUnavailable ? .notInstalled : .available,
                     .typeless: allVoiceToolsUnavailable ? .notInstalled : .available,
+                    .qianwen: allVoiceToolsUnavailable ? .notInstalled : .available,
                     .vokie: allVoiceToolsUnavailable ? .notInstalled : .available,
                     .other: .unknown,
                 ],

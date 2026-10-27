@@ -127,6 +127,7 @@ enum OnboardingVoiceTool: String, CaseIterable, Codable, Identifiable {
     case weixin
     case typeless
     case vokie
+    case qianwen
     case other
 
     var id: String { rawValue }
@@ -145,7 +146,7 @@ enum OnboardingVoiceTool: String, CaseIterable, Codable, Identifiable {
             return "com.bytedance.inputmethod.doubaoime.pinyin"
         case .weixin:
             return "com.tencent.inputmethod.wetype.pinyin"
-        case .unselected, .typeless, .vokie, .other:
+        case .unselected, .typeless, .vokie, .qianwen, .other:
             return nil
         }
     }
@@ -154,7 +155,7 @@ enum OnboardingVoiceTool: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .vokie:
             return URL(string: "vokie://launch")
-        case .unselected, .doubao, .weixin, .typeless, .other:
+        case .unselected, .doubao, .weixin, .typeless, .qianwen, .other:
             return nil
         }
     }
@@ -163,6 +164,8 @@ enum OnboardingVoiceTool: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .typeless:
             return "now.typeless.desktop"
+        case .qianwen:
+            return "com.alibaba.tongyi"
         case .unselected, .doubao, .weixin, .vokie, .other:
             return nil
         }
@@ -170,6 +173,12 @@ enum OnboardingVoiceTool: String, CaseIterable, Codable, Identifiable {
 
     var requiresFunctionKeySetup: Bool {
         preferredInputSourceID != nil
+    }
+
+    /// Qianwen uses the user's right Command hold shortcut. Keep the existing
+    /// Fn onboarding policy for every other tool, without changing live settings.
+    var usesFunctionKeyDuringOnboarding: Bool {
+        self != .qianwen
     }
 }
 
@@ -197,8 +206,8 @@ enum OnboardingAIAssistantPrompt {
     1. 只在系统和当前用户的 Applications 目录中定位已安装的无线麦 SayAll。未找到时，向我确认安装位置；不要运行测试副本或下载归档：
        \(configurationCommand.replacingOccurrences(of: "\n", with: "\n   "))
     2. 自动选择当前已连接的遥控器；如果有多个候选且无法判断，只向我询问一次。
-    3. 自动选择已安装且可用的语音工具：豆包、微信输入法、Vokie、Typeless 或其他工具；如果有多个候选且无法判断，只询问我一次。
-    4. 让本次 Onboarding 使用 Fn，并按控制设备与语音工具匹配的“按住”或“按一次”方式配置。
+    3. 自动选择已安装且可用的语音工具：豆包、微信输入法、Vokie、Typeless、千问或其他工具；如果有多个候选且无法判断，只询问我一次。
+    4. 千问使用右 Command，其他工具使用 Fn，并按控制设备与语音工具匹配的“按住”或“按一次”方式配置。
     5. 选择可用的无线麦 SayAll 音频输出设备，并保留当前增益。第三方语音工具必须把同一设备选择为麦克风；需要调整增益时，在无线麦 SayAll 真实语音测试页调整。
     6. 只修改无线麦 SayAll 自己的配置，不读取或修改第三方语音工具的私有文件、数据库、沙盒或未公开协议。
     7. 配置成功后，将无线麦 SayAll 向导停在真实语音测试步骤，不要跳过语音、音频、按键和文字上屏验证，也不要把写入配置当成验证成功。
@@ -215,8 +224,8 @@ enum OnboardingAIAssistantPrompt {
     1. Locate SayAll only in the system and current-user Applications folders. If it is not found, ask me for its install location. Do not run test copies or download archives:
        \(configurationCommand.replacingOccurrences(of: "\n", with: "\n   "))
     2. Select the currently connected remote automatically; ask me at most once if multiple candidates cannot be distinguished.
-    3. Select an installed and available voice typing app: Doubao, WeType, Vokie, Typeless, or Other; ask me at most once if multiple candidates cannot be distinguished.
-    4. Use Fn for this onboarding run and apply the hold-or-toggle behavior matched to the selected remote and voice typing app.
+    3. Select an installed and available voice typing app: Doubao, WeType, Vokie, Typeless, Qianwen, or Other; ask me at most once if multiple candidates cannot be distinguished.
+    4. Use right Command for Qianwen and Fn for other apps, then apply the hold-or-toggle behavior matched to the selected remote and voice typing app.
     5. Select an available SayAll audio output device and keep the current gain. The third-party voice typing app must select the same device as its microphone; adjust the gain only on SayAll’s real voice-test page if needed.
     6. Modify only SayAll’s own configuration. Do not read or modify private files, databases, sandboxes, or undocumented protocols of third-party voice typing apps.
     7. After configuration, leave SayAll at the real voice-test step. Do not skip voice, audio, button, or text-on-screen verification, and do not treat a written configuration as proof of success.
@@ -295,7 +304,7 @@ struct VoiceToolAdapterProfile: Equatable {
     var globalActivationSupport: Bool? {
         switch tool {
         case .doubao: return true
-        case .weixin, .typeless, .vokie: return false
+        case .weixin, .typeless, .vokie, .qianwen: return false
         case .unselected, .other: return nil
         }
     }
@@ -336,6 +345,15 @@ struct VoiceToolAdapterProfile: Equatable {
                 defaultShortcutByMode: [.toggle: .function],
                 recommendedMode: .toggle,
                 installationProbe: .publicURLScheme,
+                evidenceState: .pending
+            )
+        case .qianwen:
+            return Self(
+                tool: tool,
+                supportedModes: [.hold],
+                defaultShortcutByMode: [.hold: .rightCommand],
+                recommendedMode: .hold,
+                installationProbe: .applicationBundle,
                 evidenceState: .pending
             )
         case .other:
@@ -733,6 +751,9 @@ enum OnboardingVoiceToolVisibilityPolicy {
         tools.append(.vokie)
         if availability[.typeless] == .available {
             tools.append(.typeless)
+        }
+        if availability[.qianwen] == .available {
+            tools.append(.qianwen)
         }
         tools.append(.other)
         return tools

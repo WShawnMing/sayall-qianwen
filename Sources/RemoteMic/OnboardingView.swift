@@ -3159,7 +3159,7 @@ struct OnboardingView: View {
     }
 
     private var allRecognizedVoiceToolsUnavailable: Bool {
-        [OnboardingVoiceTool.doubao, .weixin, .typeless, .vokie].allSatisfy {
+        [OnboardingVoiceTool.doubao, .weixin, .typeless, .vokie, .qianwen].allSatisfy {
             voiceToolAvailability[$0] == .notInstalled
         }
     }
@@ -3172,7 +3172,7 @@ struct OnboardingView: View {
             return true
         case .vokie:
             return true
-        case .doubao, .weixin, .typeless:
+        case .doubao, .weixin, .typeless, .qianwen:
             return voiceToolAvailability[settings.onboardingVoiceTool] == .available
         }
     }
@@ -3200,7 +3200,7 @@ struct OnboardingView: View {
             controlSource: settings.onboardingControlSource,
             preferredGesture: settings.onboardingPreferredGesture,
             userBinding: selectedBinding,
-            forceFunctionKey: true
+            forceFunctionKey: settings.onboardingVoiceTool.usesFunctionKeyDuringOnboarding
         )
     }
 
@@ -3448,6 +3448,9 @@ struct OnboardingView: View {
     }
 
     private var voiceGestureConfirmationText: String {
+        if settings.onboardingVoiceTool == .qianwen {
+            return localization.text("onboarding.voice_tool.qianwen.confirm_shortcut")
+        }
         let key = resolvedVoiceGestureMode == .hold
             ? "onboarding.voice_test.configuration.gesture_checkbox.hold"
             : "onboarding.voice_test.configuration.gesture_checkbox.toggle"
@@ -3593,6 +3596,7 @@ struct OnboardingView: View {
         case .weixin: return "message.fill"
         case .typeless: return "waveform.badge.mic"
         case .vokie: return "sparkles.rectangle.stack.fill"
+        case .qianwen: return "mic.fill"
         case .other: return "ellipsis.circle.fill"
         case .unselected: return "circle"
         }
@@ -3635,6 +3639,19 @@ struct OnboardingView: View {
     ) -> [OnboardingInputMethodGuideStep] {
         let toolSteps: [OnboardingInputMethodGuideStep]
         switch tool {
+        case .qianwen:
+            // This shortcut does not consume Fn, so show the actual Qianwen
+            // setup instead of asking users to change unrelated macOS settings.
+            return (1...4).map { step in
+                OnboardingInputMethodGuideStep(
+                    id: step,
+                    titleKey: "onboarding.voice_tool.qianwen.step\(step).title",
+                    content: .instruction(
+                        systemImage: step == 3 ? "mic.fill" : "keyboard",
+                        detailKey: "onboarding.voice_tool.qianwen.step\(step).detail"
+                    )
+                )
+            }
         case .doubao:
             toolSteps = [
                 OnboardingInputMethodGuideStep(
@@ -3793,7 +3810,10 @@ struct OnboardingView: View {
     private func selectVoiceTool(_ tool: OnboardingVoiceTool) {
         settings.setOnboardingVoiceTool(tool)
         AppLogger.shared.write(
-            "ONBOARDING VOICE_TOOL selected=\(tool.rawValue) binding_policy=function_key"
+            "ONBOARDING VOICE_TOOL selected=\(tool.rawValue) " +
+                (tool.usesFunctionKeyDuringOnboarding
+                    ? "binding_policy=function_key"
+                    : "binding_policy=right_command")
         )
         selectedInputMethodGuideStep = nil
         completedInputMethodGuideSteps.removeAll()
@@ -3839,7 +3859,7 @@ struct OnboardingView: View {
         -> [OnboardingVoiceTool: OnboardingVoiceToolAvailability] {
         var availability: [OnboardingVoiceTool: OnboardingVoiceToolAvailability] = [:]
         for tool in [
-            OnboardingVoiceTool.doubao, .weixin, .typeless, .vokie, .other,
+            OnboardingVoiceTool.doubao, .weixin, .typeless, .vokie, .qianwen, .other,
         ] {
             availability[tool] = OnboardingInputSourceSwitcher.availability(for: tool)
         }

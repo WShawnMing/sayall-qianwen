@@ -1296,3 +1296,15 @@
 "audio.mac_microphone.error.interrupted" = "语音已中断。请重试。";
 "audio.mac_microphone.error.timed_out" = "准备超时。请重试。";
 "audio.mac_microphone.error.accessibility" = "请在系统设置中允许辅助功能访问。";
+/* Qianwen remote microphone setup. */
+"onboarding.voice_tool.qianwen.confirm_shortcut" = "我已把千问设为按住右 Command 说话";
+"onboarding.voice_tool.qianwen.title" = "千问";
+"onboarding.voice_tool.qianwen.detail" = "按住语音键，用千问输入文字";
+"onboarding.voice_tool.qianwen.step1.title" = "开启千问语音输入法";
+"onboarding.voice_tool.qianwen.step1.detail" = "打开千问 → 设置 → 语音输入法，开启「使用千问语音输入法」。保持千问运行。";
+"onboarding.voice_tool.qianwen.step2.title" = "选择右 Command";
+"onboarding.voice_tool.qianwen.step2.detail" = "将「短按或按住说话」设为右 ⌘。使用遥控器时，按住麦克风键说话，说完松开。";
+"onboarding.voice_tool.qianwen.step3.title" = "选择遥控器麦克风";
+"onboarding.voice_tool.qianwen.step3.detail" = "在千问的麦克风选项中，选择与无线麦 SayAll 输出相同的设备：SayAll、MiRemoteV 2ch 或 BlackHole 2ch。不要选 Mac 内置麦克风。";
+"onboarding.voice_tool.qianwen.step4.title" = "避免短按后继续录音";
+"onboarding.voice_tool.qianwen.step4.detail" = "建议关闭千问的「短按也唤起语音输入」，避免误碰语音键后停留在录音状态。普通按键可在完成后单独设置。";

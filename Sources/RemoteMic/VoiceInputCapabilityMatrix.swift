@@ -17,6 +17,7 @@ import Foundation
 //   豆包输入法           ✅       Fn          ✅          右 Command
 //   微信输入法           ✅       Fn          ✅          右 Command
 //   Vokie               ✅       待确认       ✅          Fn
+//   千问                 ✅       右 Command  不启用       —
 //
 // 由此得到的搭配规则：
 // 1. 「语音键模拟 Fn 点按」只在**不会按一次收音**的遥控器上才有意义（它把「按住」模拟成「点按」，
@@ -45,7 +46,7 @@ extension OnboardingVoiceTool {
     var supportsHoldVoiceRecording: Bool {
         switch self {
         case .typeless: return false
-        case .doubao, .weixin, .vokie, .unselected, .other: return true
+        case .doubao, .weixin, .vokie, .qianwen, .unselected, .other: return true
         }
     }
 }
