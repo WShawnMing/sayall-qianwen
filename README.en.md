@@ -1,5 +1,7 @@
 # SayAll
 
+> **Personal Qianwen fork** of [HD838A/remote-mic-app](https://github.com/HD838A/remote-mic-app). Bridges Xiaomi Remote 2 audio to Qianwen through the SayAll virtual microphone and maps the voice button to right Command. Clone `codex/qianwen-remote` and follow the [build and installation guide (Chinese)](Testing/QianwenRemote.md#从个人-fork-拉取并安装). This is a personal test build. The website, download links and feature descriptions below belong to the upstream project.
+
 [简体中文](README.md)
 
 [Website](https://sayall.app/en/) · [Setup tutorial](https://sayall.app/en/tutorial/) · [Weibo](https://weibo.com/getSayAll)
