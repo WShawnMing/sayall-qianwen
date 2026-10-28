@@ -2,6 +2,8 @@
 
 > **千问个人 fork**：基于 [HD838A/remote-mic-app](https://github.com/HD838A/remote-mic-app)，适配小米遥控器 2 → SayAll 虚拟麦克风 → 千问，语音键使用右 Command。请拉取 `codex/qianwen-remote` 分支，并按[构建与安装说明](Testing/QianwenRemote.md#从个人-fork-拉取并安装)部署。此分支是个人测试版本；下面保留的官网、下载链接和功能介绍属于上游项目。
 
+> **双麦克风候选**：请拉取 `codex/dual-microphone`，已包含上述千问适配。在连接页开启「按住右 Command 使用电脑麦克风」后，键盘右 Command 使用电脑麦克风，遥控器语音键使用遥控器麦克风。构建与 75 项测试已通过，本机已安装；千问文字及连续交替输入仍待[实机验收](Testing/QianwenRemote.md#电脑与遥控器交替输入)。
+
 [English](README.en.md)
 
 [官网](https://sayall.app/) · [配置教程](https://sayall.app/tutorial/) · [微博](https://weibo.com/getSayAll)

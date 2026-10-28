@@ -65,6 +65,8 @@
 
 仓库：<https://github.com/WShawnMing/sayall-qianwen>。改动位于 `codex/qianwen-remote`；`main` 保留上游基线。原仓库的 Releases 和官网安装包不包含这里的千问向导适配。
 
+要使用双麦克风候选，将下面克隆命令的 `--branch codex/qianwen-remote` 改为 `--branch codex/dual-microphone`，后续构建步骤相同；该分支包含全部千问适配。此候选仍待完整实机验收，未替换默认分支。
+
 此安装流程支持 **Apple 芯片 Mac、macOS 14 及以上**；Intel Mac 需要另行构建与验证。源码构建需要完整 Xcode（Swift 6.2 及以上工具链）、Python 3 和 ripgrep（`rg`）。安装 Xcode 后先启动一次完成组件准备，确认 `xcodebuild -version` 和 `xcrun swift --version` 可用；只有 Command Line Tools 不足以构建音频驱动。已有 Homebrew 时可用 `brew install ripgrep` 安装 `rg`。
 
 在终端执行以下命令。源码放在非 iCloud 同步的 `~/Developer` 下，避免 FinderInfo 元数据导致签名失败；若同名目录已经存在，请先核对现有仓库，不要覆盖。
