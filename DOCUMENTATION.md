@@ -50,6 +50,7 @@
 
 - 普通用户入口：[`README.md`](README.md)、[`TROUBLESHOOTING.md`](TROUBLESHOOTING.md)。
 - 千问个人 fork 的拉取、构建、安装与实机验收：[`Testing/QianwenRemote.md`](Testing/QianwenRemote.md)。
+- 千问个人 fork 的电脑/遥控器交替输入规范：[`feature/dual-microphone/PRODUCT_SPEC.md`](feature/dual-microphone/PRODUCT_SPEC.md)。
 - 技术架构：[`TECHNICAL.md`](TECHNICAL.md)。
 - AI 环境配置：[`AI_SETUP.md`](AI_SETUP.md)。
 - 许可与归属：[`LICENSE.md`](LICENSE.md)、[`LOGO-LICENSE.md`](LOGO-LICENSE.md)、[`COPYRIGHT.md`](COPYRIGHT.md)、[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。

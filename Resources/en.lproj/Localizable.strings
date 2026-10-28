@@ -1275,6 +1275,9 @@
 
 /* Mac microphone: explicit, per-session capture. */
 "audio.mac_microphone.input" = "Input device";
+"audio.mac_microphone.command_enable" = "Hold right Command to use the Mac microphone";
+"audio.mac_microphone.command_help" = "Physical right Command uses the microphone below until released. The remote voice button uses the remote microphone. Keep Qianwen on SayAll with short-press activation off. Use one source at a time; Mac capture stops after 2 minutes.";
+"audio.mac_microphone.command_unavailable" = "Could not enable. Check SayAll microphone and Input Monitoring permissions, then turn this option on again.";
 "audio.mac_microphone.choose" = "Choose a Mac microphone";
 "audio.mac_microphone.start" = "Speak with Mac microphone";
 "audio.mac_microphone.stop" = "Stop using Mac microphone";

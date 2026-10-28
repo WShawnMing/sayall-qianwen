@@ -4,6 +4,7 @@ enum MacMicrophoneEntry: String {
     case connectionPage = "connection_page"
     case statusMenu = "status_menu"
     case shortcut
+    case physicalCommand = "physical_right_command"
 }
 
 enum MacMicrophoneFailure: String, Error {

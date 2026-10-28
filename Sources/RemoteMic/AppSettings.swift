@@ -388,6 +388,11 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(macMicrophoneInputUID, forKey: "macMicrophoneInputUID") }
     }
 
+    // Local opt-in: importing another Mac's configuration must not enable capture.
+    @Published var macMicrophoneCommandEnabled: Bool {
+        didSet { defaults.set(macMicrophoneCommandEnabled, forKey: "macMicrophoneCommandEnabled") }
+    }
+
     @Published var macMicrophoneShortcut: CustomKeyboardShortcut? {
         didSet {
             defaults.set(macMicrophoneShortcut.flatMap { try? JSONEncoder().encode($0) },
@@ -852,6 +857,7 @@ final class AppSettings: ObservableObject {
             : defaults.double(forKey: Keys.gainDB)
         let persistedAudioDeviceUID = defaults.string(forKey: Keys.selectedAudioDeviceUID) ?? ""
         macMicrophoneInputUID = defaults.string(forKey: "macMicrophoneInputUID") ?? ""
+        macMicrophoneCommandEnabled = defaults.bool(forKey: "macMicrophoneCommandEnabled")
         macMicrophoneShortcut = Self.decodeSetting(CustomKeyboardShortcut.self,
             forKey: "macMicrophoneShortcut", from: defaults, corrupted: &corruptedKeys)
         selectedAudioDeviceUID = persistedAudioDeviceUID

@@ -7,6 +7,33 @@ import Testing
 
 @Suite("Mac microphone input")
 struct MacMicrophoneInputTests {
+    @Test func physicalCommandJourneyPreservesCaptureTailAndCannotCancelAManualSession() {
+        let h = MacMicrophoneHarness()
+        let key = MacMicrophoneCommandSession()
+        key.begin = {
+            guard !h.controller.state.isActive else { return false }
+            h.controller.toggle(from: .physicalCommand)
+            return h.controller.state.isActive
+        }
+        key.end = { h.controller.stop() }
+        h.controller.onStateChange = { state in if !state.isActive { key.sessionEnded() } }
+        key.update(pressed: true)
+        h.prepareCompletion?(nil)
+        h.startCompletion?(nil)
+        key.update(pressed: false)
+        #expect(h.controller.state == .stopping)
+        h.events.append("tail_pcm")
+        h.stopCompletion?()
+        #expect(h.events.suffix(2) == ["tail_pcm", "drain"])
+        h.drainCompletion?(true)
+        #expect(h.controller.state == .idle)
+        h.controller.toggle(from: .connectionPage)
+        key.update(pressed: true)
+        key.update(pressed: false)
+        #expect(h.controller.state == .preparing)
+        #expect(h.events.filter { $0 == "stop_capture" }.count == 1)
+    }
+
     @Test func threeEntriesShareOneSessionAndDrainAfterTheCaptureTail() throws {
         let h = MacMicrophoneHarness()
         h.controller.toggle(from: .connectionPage)

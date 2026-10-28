@@ -1275,6 +1275,9 @@
 
 /* Mac microphone: explicit, per-session capture. */
 "audio.mac_microphone.input" = "输入设备";
+"audio.mac_microphone.command_enable" = "按住右 Command 使用电脑麦克风";
+"audio.mac_microphone.command_help" = "实体键盘右 Command：使用下方电脑麦克风，松开停止；遥控器语音键：使用遥控器麦克风。千问保持选择 SayAll，并关闭“短按也唤起语音输入”。两种方式请交替使用，单次电脑收音最长 2 分钟。";
+"audio.mac_microphone.command_unavailable" = "未能启用。请检查无线麦 SayAll 的麦克风和输入监控权限，然后重新打开此开关。";
 "audio.mac_microphone.choose" = "选择 Mac 麦克风";
 "audio.mac_microphone.start" = "用 Mac 麦克风说话";
 "audio.mac_microphone.stop" = "停止用 Mac 麦克风说话";

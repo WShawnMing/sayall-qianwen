@@ -547,6 +547,13 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
     @Published private(set) var macMicrophoneShortcutAvailable = true
     private let macMicrophoneCapture = MacMicrophoneCapture()
     private let macMicrophoneHotKey = MacMicrophoneShortcut()
+    private let macMicrophoneCommandKey = MacMicrophoneCommandKey()
+    private let macMicrophoneCommandSession = MacMicrophoneCommandSession()
+    private var macMicrophoneCommandSubscription: AnyCancellable?
+    private var macMicrophoneCommandDeadline: DispatchWorkItem?
+    @Published private(set) var macMicrophoneCommandUnavailable = false
+    @Published private(set) var macMicrophoneCommandPermissionPending = false
+    private var macMicrophoneCommandPermissionGeneration = 0
     private var macMicrophoneShortcutSubscription: AnyCancellable?
     private var macMicrophoneDrainCompletion: ((Bool) -> Void)?
     private lazy var macMicrophoneSession: MacMicrophoneSessionController = {
@@ -575,6 +582,11 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
         session.onStateChange = { [weak self] state in
             guard let self else { return }
             self.macMicrophoneState = state
+            if !state.isActive {
+                self.macMicrophoneCommandSession.sessionEnded()
+                self.macMicrophoneCommandDeadline?.cancel()
+                self.macMicrophoneCommandDeadline = nil
+            }
         }
         return session
     }()
@@ -1445,6 +1457,38 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
         applyHIDSettings()
         refreshRemoteDeviceNames(reason: .startup)
         macMicrophoneHotKey.onPress = { [weak self] in self?.toggleMacMicrophone(from: .shortcut) }
+        macMicrophoneCommandSession.begin = { [weak self] in
+            guard let self, self.settings.macMicrophoneCommandEnabled,
+                  !self.macMicrophoneState.isActive else { return false }
+            self.macMicrophoneSession.toggle(from: .physicalCommand)
+            guard self.macMicrophoneState.isActive else { return false }
+            let deadline = DispatchWorkItem { [weak self] in
+                guard let self, self.macMicrophoneCommandSession.ownsSession else { return }
+                self.macMicrophoneSession.stop(failure: .timedOut)
+            }
+            self.macMicrophoneCommandDeadline = deadline
+            DispatchQueue.main.asyncAfter(deadline: .now() + 120, execute: deadline)
+            return true
+        }
+        macMicrophoneCommandSession.end = { [weak self] in
+            self?.macMicrophoneCommandDeadline?.cancel()
+            self?.macMicrophoneCommandDeadline = nil
+            self?.macMicrophoneSession.stop()
+        }
+        macMicrophoneCommandKey.onChange = { [weak self] pressed in
+            self?.macMicrophoneCommandSession.update(pressed: pressed)
+        }
+        macMicrophoneCommandKey.onUnavailable = { [weak self] in
+            guard let self else { return }
+            if self.macMicrophoneCommandSession.ownsSession {
+                self.macMicrophoneSession.stop(failure: .interrupted)
+            }
+            self.macMicrophoneCommandSession.cancel()
+            self.macMicrophoneCommandUnavailable = true
+        }
+        macMicrophoneCommandSubscription = settings.$macMicrophoneCommandEnabled
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.refreshMacMicrophoneCommandKey() }
         macMicrophoneShortcutSubscription = settings.$macMicrophoneShortcut
             .receive(on: RunLoop.main)
             .sink { [weak self] shortcut in
@@ -1467,6 +1511,13 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
     }
 
     func stop() {
+        macMicrophoneCommandPermissionGeneration += 1
+        macMicrophoneCommandSubscription?.cancel()
+        macMicrophoneCommandSubscription = nil
+        macMicrophoneCommandKey.stop()
+        macMicrophoneCommandSession.cancel()
+        macMicrophoneCommandDeadline?.cancel()
+        macMicrophoneCommandDeadline = nil
         macMicrophoneShortcutSubscription?.cancel()
         macMicrophoneShortcutSubscription = nil
         macMicrophoneHotKey.stop()
@@ -2703,6 +2754,49 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
         macMicrophoneSession.toggle(from: entry)
     }
 
+    func setMacMicrophoneCommandEnabled(_ enabled: Bool) {
+        macMicrophoneCommandPermissionGeneration += 1
+        let generation = macMicrophoneCommandPermissionGeneration
+        macMicrophoneCommandPermissionPending = false
+        guard enabled else {
+            macMicrophoneCommandUnavailable = false
+            settings.macMicrophoneCommandEnabled = false
+            refreshMacMicrophoneCommandKey()
+            return
+        }
+        let apply: (Bool) -> Void = { [weak self] granted in
+            guard let self, self.macMicrophoneCommandPermissionGeneration == generation else { return }
+            self.macMicrophoneCommandPermissionPending = false
+            self.macMicrophoneCommandUnavailable = !granted
+            if granted {
+                self.settings.macMicrophoneCommandEnabled = true
+            }
+        }
+        switch AVCaptureDevice.authorizationStatus(for: .audio) {
+        case .authorized: apply(true)
+        case .notDetermined:
+            macMicrophoneCommandPermissionPending = true
+            AVCaptureDevice.requestAccess(for: .audio) { granted in
+                DispatchQueue.main.async { apply(granted) }
+            }
+        default: apply(false)
+        }
+    }
+
+    private func refreshMacMicrophoneCommandKey() {
+        macMicrophoneCommandKey.stop()
+        macMicrophoneCommandSession.cancel()
+        guard started, settings.macMicrophoneCommandEnabled,
+              !systemAudioSuspensionState.isSuspended else {
+            return
+        }
+        guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized else {
+            macMicrophoneCommandUnavailable = true
+            return
+        }
+        macMicrophoneCommandUnavailable = !macMicrophoneCommandKey.start()
+    }
+
     func setMacMicrophoneShortcut(_ shortcut: CustomKeyboardShortcut?) {
         if let shortcut, !MacMicrophoneShortcut.supports(shortcut) {
             macMicrophoneShortcutAvailable = false
@@ -2712,6 +2806,10 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
     }
 
     func suspendMacMicrophoneShortcutCapture(_ suspended: Bool) {
+        if suspended {
+            macMicrophoneCommandKey.stop()
+            macMicrophoneCommandSession.cancel()
+        } else { refreshMacMicrophoneCommandKey() }
         if suspended { macMicrophoneHotKey.stop() }
         else { macMicrophoneShortcutAvailable = macMicrophoneHotKey.register(settings.macMicrophoneShortcut) }
     }
@@ -2790,6 +2888,7 @@ final class BridgeAppModel: NSObject, ObservableObject, XiaomiBluetoothBridgeDel
         )
         guard started, changed else { return }
         if event.isSuspending { macMicrophoneSession.stop(failure: .interrupted) }
+        refreshMacMicrophoneCommandKey()
         setBluetoothSystemSuspended(
             systemAudioSuspensionState.isSuspended,
             reason: event.rawValue

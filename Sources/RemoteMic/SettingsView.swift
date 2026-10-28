@@ -1415,6 +1415,19 @@ struct SettingsView: View {
 
     private var macMicrophoneControls: some View {
         VStack(alignment: .leading, spacing: 9) {
+            Toggle("audio.mac_microphone.command_enable", isOn: Binding(
+                get: { settings.macMicrophoneCommandEnabled },
+                set: { model.setMacMicrophoneCommandEnabled($0) }
+            ))
+            .disabled(model.macMicrophoneCommandPermissionPending)
+            Text("audio.mac_microphone.command_help")
+                .font(.system(size: 12)).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if model.macMicrophoneCommandUnavailable {
+                Text("audio.mac_microphone.command_unavailable")
+                    .font(.system(size: 12)).foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             HStack(spacing: 14) {
                 Text("audio.mac_microphone.input").frame(width: 92, alignment: .leading)
                 Group {
