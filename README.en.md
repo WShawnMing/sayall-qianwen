@@ -2,7 +2,7 @@
 
 > **Personal Qianwen fork** of [HD838A/remote-mic-app](https://github.com/HD838A/remote-mic-app). Bridges Xiaomi Remote 2 audio to Qianwen through the SayAll virtual microphone and maps the voice button to right Command. Clone `codex/qianwen-remote` and follow the [build and installation guide (Chinese)](Testing/QianwenRemote.md#从个人-fork-拉取并安装). This is a personal test build. The website, download links and feature descriptions below belong to the upstream project.
 
-> **Dual microphone candidate:** clone `codex/dual-microphone`, which includes the Qianwen changes above. Enable “Hold right Command to use the Mac microphone” on Connection: physical right Command uses the Mac microphone; the remote voice button uses the remote microphone. The build and 75 tests passed, and the candidate is installed locally. Qianwen transcription and repeated source switching still require [physical-device acceptance (Chinese)](Testing/QianwenRemote.md#电脑与遥控器交替输入).
+> **Dual microphone candidate:** clone `codex/dual-microphone`, which includes the Qianwen changes above. Enable “Hold right Command to use the Mac microphone” on Connection: physical right Command uses the Mac microphone; the remote voice button uses the remote microphone. The build and 75 tests passed. The candidate is installed locally, and the user confirmed transcription from both sources. Repeated switching, complete first/last words and interruption recovery still require [full physical-device acceptance (Chinese)](Testing/QianwenRemote.md#电脑与遥控器交替输入).
 
 [简体中文](README.md)
 
